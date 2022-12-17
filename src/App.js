@@ -1,53 +1,46 @@
 import './App.css';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 
-function calculations() {
-  console.log("Making some calculations");
-  return Math.trunc(Math.random() * 20)
+const complexComputations = (num) => {
+
+  let i = 0;
+  while (i < 1000000000) i++
+
+  return num * 2
 }
 
 
 function App() {
 
-  // useState returns an array (a tuple) with two predefined elements
-  // useState(calculations()) --> calculations() will get triggered on every state change due to component re-render
-  // BUT if we use a callback function, calculations() will only run on initial mount
-  const [counter, setCounter] = useState(() => {
-    return calculations()
-  })
+  const [value, setValue] = useState(30)
+  const [colored, setColored] = useState(false)
 
-  const add = () => {
-    setCounter(prevCounter => prevCounter + 1)
+  // complexComputations gets triggered even on 'Change color' btn click
+  // because state changes -> comp rerenders
+  // const computed = complexComputations(value)
+
+  // useMemo will only recompute the memoized value when one of the deps has changed.
+  const computed = useMemo(() => {
+    return complexComputations(value)
+  }, [value])
+
+  const styles = {
+    color: colored ? "red" : "black"
   }
-  const subtract = () => {
-    setCounter(prevCounter => prevCounter - 1)
-  }
 
 
-  const [obj, setObj] = useState({
-    title: "Hello World!",
-    date: Date.now()
-  })
-
-  // If we don't insert previous object (...prevObj) --> date will be gone,
-  // the state will just get changed for the value we passed
-  const changeTitle = () => {
-    setObj(prevObj => {
-      return { ...prevObj, title: "Hello everyone!" }
-    })
-  }
+  useEffect(() => {
+    console.log('color changed');
+  }, [colored])
 
   return (
     <>
-      <h1>{counter}</h1>
-      <button onClick={add}>+</button>
-      <button onClick={subtract}>-</button>
+      <h1 style={styles}>Computed value: {computed}</h1>
+      <button onClick={() => setValue(prev => prev + 1)}>Add</button>
+      <button onClick={() => setValue(prev => prev - 1)}>Subtract</button>
 
-      {/* Preformatted text */}
-      {/* The text will be displayed exactly as written in the HTML source code. */}
-      <pre>{JSON.stringify(obj, null, 2)}</pre>
-      <button onClick={changeTitle}>Change title</button>
+      <button onClick={() => setColored(prev => !prev)}>Change color</button>
     </>
   );
 }
